@@ -1,0 +1,14 @@
+{
+  "name": "study-energy",
+  "version": "1.0.0",
+  "private": true,
+  "scripts": {
+    "start": "node server.js"
+  },
+  "dependencies": {
+    "better-sqlite3": "^11.7.0",
+    "bcryptjs": "^2.4.3",
+    "express": "^4.21.0",
+    "express-session": "^1.18.1"
+  }
+}

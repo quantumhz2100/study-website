@@ -1,0 +1,697 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Study Energy</title>
+  <style>
+    :root {
+      --bg: #080c18;
+      --card: #10172a;
+      --card2: #161f36;
+      --border: #1e2d52;
+      --yellow: #ffe600;
+      --yellow2: #ffab00;
+      --yellow-glow: rgba(255,230,0,0.18);
+      --green: #69f0ae;
+      --red: #ff5252;
+      --text: #e8edf8;
+      --dim: #6b7faa;
+    }
+    *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: 'Segoe UI', system-ui, sans-serif;
+      min-height: 100vh;
+    }
+    ::-webkit-scrollbar { width: 5px; }
+    ::-webkit-scrollbar-track { background: var(--card); }
+    ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+
+    /* ── HEADER ── */
+    header {
+      background: var(--card);
+      border-bottom: 1px solid var(--border);
+      padding: 14px 24px;
+      display: flex; align-items: center; justify-content: space-between;
+      position: sticky; top: 0; z-index: 100;
+      box-shadow: 0 4px 24px rgba(0,0,0,.4);
+      gap: 12px; flex-wrap: wrap;
+    }
+    .hdr-left { display: flex; align-items: center; gap: 10px; }
+    .hdr-logo {
+      font-size: 30px;
+      animation: boltPulse 3s ease-in-out infinite;
+    }
+    @keyframes boltPulse {
+      0%,100% { transform: scale(1) rotate(-3deg); filter: drop-shadow(0 0 8px #ffe600); }
+      50%     { transform: scale(1.12) rotate(3deg); filter: drop-shadow(0 0 24px #ffe600); }
+    }
+    .hdr-title { font-size: 19px; font-weight: 900; color: var(--yellow); line-height: 1.1; }
+    .hdr-sub { font-size: 11px; color: var(--dim); }
+    .hdr-right { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+    .chip {
+      padding: 7px 14px; border-radius: 20px;
+      font-size: 14px; font-weight: 700;
+      display: flex; align-items: center; gap: 6px;
+    }
+    .chip-user { background: var(--card2); border: 1px solid var(--border); color: var(--text); }
+    .chip-energy {
+      background: linear-gradient(135deg, var(--yellow), var(--yellow2));
+      color: #07090f; font-size: 15px;
+      transition: transform .2s, box-shadow .2s;
+    }
+    .chip-energy.flash {
+      transform: scale(1.25);
+      box-shadow: 0 0 30px rgba(255,230,0,.7);
+    }
+    .chip-battery { background: #0d2b1a; border: 1px solid var(--green); color: var(--green); }
+    .btn-logout {
+      padding: 7px 14px; border-radius: 20px;
+      background: var(--card2); border: 1px solid var(--border);
+      color: var(--dim); font-size: 12px; font-weight: 700;
+      cursor: pointer; transition: all .2s;
+    }
+    .btn-logout:hover { border-color: var(--red); color: var(--red); }
+
+    /* ── LAYOUT ── */
+    .layout {
+      max-width: 1380px; margin: 0 auto; padding: 22px;
+      display: grid; grid-template-columns: 1fr 310px; gap: 22px;
+    }
+    @media(max-width:880px) { .layout { grid-template-columns: 1fr; } }
+
+    /* ── CARDS ── */
+    .card {
+      background: var(--card); border: 1px solid var(--border);
+      border-radius: 20px; padding: 22px; margin-bottom: 18px;
+    }
+    .card:last-child { margin-bottom: 0; }
+    .card-title {
+      font-size: 11px; font-weight: 800; text-transform: uppercase;
+      letter-spacing: 1.8px; color: var(--dim); margin-bottom: 16px;
+      display: flex; align-items: center; gap: 7px;
+    }
+
+    /* ── BONUS BANNER ── */
+    .bonus-banner {
+      background: linear-gradient(135deg, #0a2218, #081a12);
+      border: 1px solid var(--green); border-radius: 16px;
+      padding: 16px 20px; display: flex; align-items: center; gap: 14px;
+      margin-bottom: 18px; animation: slideDown .4s ease;
+    }
+    .bonus-banner .ico { font-size: 36px; flex-shrink: 0; }
+    .bonus-banner .ttl { font-size: 15px; font-weight: 800; color: var(--green); }
+    .bonus-banner .sub { font-size: 13px; color: var(--dim); margin-top: 2px; }
+
+    /* ── PROGRESS ── */
+    .prog-labels { display: flex; justify-content: space-between; font-size: 13px; margin-bottom: 9px; }
+    .prog-track {
+      height: 22px; background: var(--card2);
+      border: 1px solid var(--border); border-radius: 11px; overflow: hidden;
+    }
+    .prog-fill {
+      height: 100%;
+      background: linear-gradient(90deg, var(--yellow), var(--yellow2));
+      border-radius: 11px;
+      transition: width .6s cubic-bezier(.34,1.56,.64,1);
+      position: relative; overflow: hidden;
+    }
+    .prog-fill::after {
+      content: ''; position: absolute; top: 0; left: -100%; width: 100%; height: 100%;
+      background: linear-gradient(90deg, transparent, rgba(255,255,255,.28), transparent);
+      animation: shimmer 2.2s infinite;
+    }
+    @keyframes shimmer { to { left: 100%; } }
+    .prog-note { font-size: 12px; color: var(--dim); margin-top: 7px; }
+    .prog-note.done { color: var(--green); font-weight: 700; }
+
+    /* ── STATS ROW ── */
+    .stats-row { display: grid; grid-template-columns: repeat(3,1fr); gap: 12px; margin-bottom: 18px; }
+    .stat-cell {
+      background: var(--card2); border: 1px solid var(--border);
+      border-radius: 16px; padding: 16px; text-align: center;
+    }
+    .stat-val { font-size: 30px; font-weight: 900; color: var(--yellow); }
+    .stat-lbl { font-size: 11px; color: var(--dim); text-transform: uppercase; letter-spacing: 1px; margin-top: 4px; }
+
+    /* ── ACTIVITY GRID ── */
+    .act-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(190px,1fr)); gap: 11px; }
+    .act-btn {
+      background: var(--card2); border: 1px solid var(--border);
+      border-radius: 14px; padding: 16px;
+      cursor: pointer; text-align: left; color: var(--text);
+      transition: border-color .2s, transform .2s, box-shadow .2s;
+    }
+    .act-btn:hover {
+      border-color: var(--yellow); transform: translateY(-3px);
+      box-shadow: 0 8px 24px var(--yellow-glow);
+    }
+    .act-btn.neg { border-color: #2a1212; }
+    .act-btn.neg:hover { border-color: var(--red); box-shadow: 0 8px 24px rgba(255,82,82,.18); }
+    .act-btn .lbl { font-size: 13px; font-weight: 700; margin-bottom: 6px; }
+    .act-btn .pts { font-size: 22px; font-weight: 900; color: var(--yellow); }
+    .act-btn.neg .pts { color: var(--red); }
+    .act-btn .hint { font-size: 11px; color: var(--dim); margin-top: 4px; }
+
+    /* ── INPUT GROUP ── */
+    .act-input-group {
+      background: var(--card2); border: 1px solid var(--border);
+      border-radius: 14px; padding: 16px;
+      display: flex; flex-direction: column; gap: 9px;
+    }
+    .act-input-group .lbl { font-size: 13px; font-weight: 700; }
+    .act-input-group .rate { font-size: 11px; color: var(--dim); }
+    .input-row { display: flex; gap: 8px; align-items: center; }
+    .input-row input {
+      flex: 1; padding: 9px 12px;
+      background: var(--card); border: 1px solid var(--border);
+      border-radius: 9px; color: var(--text); font-size: 15px; outline: none;
+      transition: border-color .2s;
+    }
+    .input-row input:focus { border-color: var(--yellow); }
+    .btn-add {
+      padding: 9px 13px; white-space: nowrap;
+      background: linear-gradient(135deg, var(--yellow), var(--yellow2));
+      border: none; border-radius: 9px;
+      color: #07090f; font-size: 13px; font-weight: 900;
+      cursor: pointer; transition: transform .15s;
+    }
+    .btn-add:hover { transform: scale(1.06); }
+    .calc-prev { font-size: 12px; color: var(--dim); min-height: 16px; }
+
+    /* ── LOG ── */
+    .log-list {
+      max-height: 280px; overflow-y: auto;
+      display: flex; flex-direction: column; gap: 7px;
+    }
+    .log-item {
+      background: var(--card2); border: 1px solid var(--border);
+      border-radius: 11px; padding: 11px 15px;
+      display: flex; justify-content: space-between; align-items: center;
+      animation: fadeUp .3s ease;
+    }
+    @keyframes fadeUp {
+      from { opacity: 0; transform: translateY(6px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+    .log-type { font-size: 13px; font-weight: 600; }
+    .log-time { font-size: 11px; color: var(--dim); margin-top: 2px; }
+    .log-pts { font-size: 16px; font-weight: 900; color: var(--yellow); }
+    .log-pts.neg { color: var(--red); }
+    .empty { text-align: center; color: var(--dim); font-size: 13px; padding: 20px 0; }
+
+    /* ── LEADERBOARD ── */
+    .lb-list { display: flex; flex-direction: column; gap: 8px; }
+    .lb-item {
+      background: var(--card2); border: 1px solid var(--border);
+      border-radius: 12px; padding: 11px 13px;
+      display: flex; align-items: center; gap: 10px;
+      transition: border-color .2s;
+    }
+    .lb-item.me { border-color: var(--yellow); background: rgba(255,230,0,.04); }
+    .lb-rank {
+      width: 28px; height: 28px; border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 13px; font-weight: 800; flex-shrink: 0;
+      background: var(--border);
+    }
+    .lb-rank.g { background: linear-gradient(135deg,#ffe600,#ff9100); color:#07090f; }
+    .lb-rank.s { background: linear-gradient(135deg,#c0c0c0,#909090); color:#07090f; }
+    .lb-rank.b { background: linear-gradient(135deg,#cd7f32,#8b4513); color:#fff; }
+    .lb-name { flex: 1; font-size: 13px; font-weight: 600; }
+    .lb-me-tag {
+      font-size: 9px; background: var(--yellow); color: #07090f;
+      border-radius: 4px; padding: 2px 5px; font-weight: 900; margin-left: 5px;
+    }
+    .lb-bat { font-size: 12px; }
+    .lb-pts { font-size: 14px; font-weight: 900; color: var(--yellow); }
+
+    /* ── GUIDE ── */
+    .guide-row { display: flex; justify-content: space-between; font-size: 13px; padding: 5px 0; }
+    .guide-row:not(:last-child) { border-bottom: 1px solid var(--border); }
+    .guide-pts { font-weight: 800; color: var(--yellow); }
+    .guide-pts.neg { color: var(--red); }
+
+    /* ── BATTERY INFO ── */
+    .bat-info { font-size: 13px; color: var(--dim); line-height: 1.7; }
+    .bat-info strong { color: var(--text); }
+    .bat-info .hi { color: var(--yellow); }
+    .bat-info .gr { color: var(--green); }
+
+    /* ── CELEBRATION ── */
+    #celebration {
+      position: fixed; inset: 0;
+      display: none; align-items: center; justify-content: center;
+      z-index: 8999; pointer-events: none;
+    }
+    .cele-box {
+      background: linear-gradient(135deg,#0c2014,#071510);
+      border: 3px solid var(--green); border-radius: 26px;
+      padding: 44px 48px; text-align: center;
+      box-shadow: 0 0 90px rgba(105,240,174,.3);
+      animation: popIn .5s cubic-bezier(.34,1.56,.64,1);
+    }
+    .cele-icon { font-size: 80px; margin-bottom: 10px; display: block; }
+    .cele-title { font-size: 26px; font-weight: 900; color: var(--green); margin-bottom: 8px; }
+    .cele-sub { font-size: 15px; color: var(--dim); }
+
+    @keyframes popIn {
+      from { transform: scale(0); opacity: 0; }
+      to   { transform: scale(1); opacity: 1; }
+    }
+    @keyframes slideDown {
+      from { opacity: 0; transform: translateY(-10px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+
+    /* ── LOADING ── */
+    .loading-screen {
+      position: fixed; inset: 0;
+      background: var(--bg);
+      display: flex; align-items: center; justify-content: center;
+      z-index: 9999; flex-direction: column; gap: 16px;
+    }
+    .loading-screen .bolt { font-size: 60px; animation: boltPulse 1.5s ease-in-out infinite; }
+    .loading-screen p { color: var(--dim); font-size: 14px; }
+  </style>
+</head>
+<body>
+
+<!-- LOADING -->
+<div class="loading-screen" id="loadingScreen">
+  <span class="bolt">&#9889;</span>
+  <p>Loading Study Energy...</p>
+</div>
+
+<!-- HEADER -->
+<header>
+  <div class="hdr-left">
+    <span class="hdr-logo">&#9889;</span>
+    <div>
+      <div class="hdr-title">Study Energy</div>
+      <div class="hdr-sub">Track &bull; Compete &bull; Grow</div>
+    </div>
+  </div>
+  <div class="hdr-right">
+    <div class="chip chip-battery" id="batChip" style="display:none">
+      &#128267; <span id="batCount">0</span>
+    </div>
+    <div class="chip chip-user">&#128100; <span id="hdrName"></span></div>
+    <div class="chip chip-energy" id="energyChip">&#9889; <span id="hdrEnergy">0</span></div>
+    <button class="btn-logout" onclick="logout()">Log Out</button>
+  </div>
+</header>
+
+<div class="layout">
+
+  <!-- LEFT COLUMN -->
+  <div>
+
+    <!-- Bonus banner -->
+    <div id="bonusBanner" class="bonus-banner" style="display:none">
+      <span class="ico">&#128267;</span>
+      <div>
+        <div class="ttl">Battery Bonus Active! +20 &#9889;</div>
+        <div class="sub">You hit 65+ energy yesterday &mdash; bonus already added to today!</div>
+      </div>
+    </div>
+
+    <!-- Daily progress -->
+    <div class="card">
+      <div class="card-title">&#128197; Today's Progress</div>
+      <div class="prog-labels">
+        <span id="progLeft">0 &#9889; today</span>
+        <span style="color:var(--dim)">65 &#9889; = &#128267; Battery</span>
+      </div>
+      <div class="prog-track">
+        <div class="prog-fill" id="progFill" style="width:0%"></div>
+      </div>
+      <div class="prog-note" id="progNote">Earn 65 &#9889; today to get a Battery! &#128267;</div>
+    </div>
+
+    <!-- Stats -->
+    <div class="stats-row">
+      <div class="stat-cell">
+        <div class="stat-val" id="stTotal">0</div>
+        <div class="stat-lbl">Total &#9889;</div>
+      </div>
+      <div class="stat-cell">
+        <div class="stat-val" id="stToday">0</div>
+        <div class="stat-lbl">Today's &#9889;</div>
+      </div>
+      <div class="stat-cell">
+        <div class="stat-val" id="stBat">0</div>
+        <div class="stat-lbl">&#128267; Batteries</div>
+      </div>
+    </div>
+
+    <!-- Log activity -->
+    <div class="card">
+      <div class="card-title">&#9889; Log Activity</div>
+      <div class="act-grid">
+
+        <button class="act-btn" onclick="logActivity('CQs', 35)">
+          <div class="lbl">&#128203; CQ's</div>
+          <div class="pts">+35 &#9889;</div>
+          <div class="hint">Tap to log</div>
+        </button>
+
+        <div class="act-input-group">
+          <div class="lbl">&#128208; Monthly Math</div>
+          <div class="rate">5 &#9889; per question</div>
+          <div class="input-row">
+            <input id="mathN" type="number" min="1" placeholder="# questions"
+                   oninput="calcPreview('math')"
+                   onkeydown="if(event.key==='Enter')doMath()">
+            <button class="btn-add" onclick="doMath()">+&#9889;</button>
+          </div>
+          <div class="calc-prev" id="mathPrev"></div>
+        </div>
+
+        <div class="act-input-group">
+          <div class="lbl">&#9997;&#65039; WWS</div>
+          <div class="rate">35 &#9889; per 100 words</div>
+          <div class="input-row">
+            <input id="wwsN" type="number" min="1" placeholder="# words"
+                   oninput="calcPreview('wws')"
+                   onkeydown="if(event.key==='Enter')doWWS()">
+            <button class="btn-add" onclick="doWWS()">+&#9889;</button>
+          </div>
+          <div class="calc-prev" id="wwsPrev"></div>
+        </div>
+
+        <button class="act-btn" onclick="logActivity('WOW', 10)">
+          <div class="lbl">&#11088; WOW</div>
+          <div class="pts">+10 &#9889;</div>
+          <div class="hint">Tap to log</div>
+        </button>
+
+        <button class="act-btn" onclick="logActivity('Class Assignment', 30)">
+          <div class="lbl">&#128218; Class Assignment</div>
+          <div class="pts">+30 &#9889;</div>
+          <div class="hint">Math, Language, etc.</div>
+        </button>
+
+        <button class="act-btn" onclick="logActivity('Reading', 10)">
+          <div class="lbl">&#128214; Reading</div>
+          <div class="pts">+10 &#9889;</div>
+          <div class="hint">Tap to log</div>
+        </button>
+
+        <button class="act-btn neg" onclick="logActivity('Correction', -5)">
+          <div class="lbl">&#9999;&#65039; Correction</div>
+          <div class="pts">&minus;5 &#9889;</div>
+          <div class="hint">Deducted from earning</div>
+        </button>
+
+      </div>
+    </div>
+
+    <!-- Today's log -->
+    <div class="card">
+      <div class="card-title">&#128203; Today's Log</div>
+      <div class="log-list" id="logList">
+        <div class="empty">No activities yet &mdash; start studying! &#9889;</div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- RIGHT COLUMN -->
+  <div>
+
+    <!-- Leaderboard -->
+    <div class="card" style="position:sticky;top:76px">
+      <div class="card-title">&#127942; Leaderboard</div>
+      <div class="lb-list" id="lbList">
+        <div class="empty">Loading...</div>
+      </div>
+      <div style="margin-top:14px;font-size:11px;color:var(--dim);text-align:center">
+        Refreshes every 10 seconds
+      </div>
+    </div>
+
+    <!-- Battery info -->
+    <div class="card">
+      <div class="card-title">&#128267; Battery System</div>
+      <div class="bat-info">
+        Earn <span class="hi"><strong>65+ &#9889; in one day</strong></span> to get a battery.<br>
+        The next day you'll automatically receive a <span class="gr"><strong>+20 &#9889; bonus</strong></span> to kick off your session!<br><br>
+        Your batteries: <span class="hi" id="batInfo">0</span> &#128267;
+      </div>
+    </div>
+
+    <!-- Point guide -->
+    <div class="card">
+      <div class="card-title">&#128202; Point Guide</div>
+      <div class="guide-row"><span>&#128203; CQ's</span>             <span class="guide-pts">+35 &#9889;</span></div>
+      <div class="guide-row"><span>&#128208; Monthly Math</span>     <span class="guide-pts">+5 &#9889; / question</span></div>
+      <div class="guide-row"><span>&#9997;&#65039; WWS</span>        <span class="guide-pts">+35 &#9889; / 100 words</span></div>
+      <div class="guide-row"><span>&#11088; WOW</span>               <span class="guide-pts">+10 &#9889;</span></div>
+      <div class="guide-row"><span>&#128218; Class Assignment</span> <span class="guide-pts">+30 &#9889;</span></div>
+      <div class="guide-row"><span>&#128214; Reading</span>          <span class="guide-pts">+10 &#9889;</span></div>
+      <div class="guide-row"><span>&#9999;&#65039; Correction</span> <span class="guide-pts neg">&minus;5 &#9889;</span></div>
+    </div>
+
+  </div>
+</div>
+
+<!-- CELEBRATION -->
+<div id="celebration" style="display:none">
+  <div class="cele-box">
+    <span class="cele-icon">&#128267;</span>
+    <div class="cele-title">Battery Earned!</div>
+    <div class="cele-sub">You hit 65+ energy today!<br>You'll get +20 &#9889; bonus tomorrow &#127881;</div>
+  </div>
+</div>
+
+<script>
+const BAT_GOAL = 65;
+let myUsername = '';
+let myData = {};
+
+(async function init() {
+  try {
+    const res = await fetch('/api/me');
+    if (!res.ok) {
+      window.location.href = '/';
+      return;
+    }
+    const data = await res.json();
+    myUsername = data.username;
+    myData = data;
+
+    document.getElementById('hdrName').textContent = myUsername;
+    document.getElementById('loadingScreen').style.display = 'none';
+
+    if (data.bonusActive) {
+      document.getElementById('bonusBanner').style.display = 'flex';
+    }
+
+    renderStats();
+    loadHistory();
+    loadLeaderboard();
+
+    setInterval(loadLeaderboard, 10000);
+  } catch {
+    window.location.href = '/';
+  }
+})();
+
+function renderStats() {
+  const total = myData.totalEnergy || 0;
+  const today = myData.todayEnergy || 0;
+  const bats  = myData.batteries   || 0;
+
+  document.getElementById('hdrEnergy').textContent = total;
+  document.getElementById('stTotal').textContent   = total;
+  document.getElementById('stToday').textContent   = today;
+  document.getElementById('stBat').textContent     = bats;
+  document.getElementById('batInfo').textContent   = bats;
+
+  if (bats > 0) {
+    document.getElementById('batChip').style.display = 'flex';
+    document.getElementById('batCount').textContent  = bats;
+  } else {
+    document.getElementById('batChip').style.display = 'none';
+  }
+
+  const pct = Math.min(100, (today / BAT_GOAL) * 100);
+  document.getElementById('progFill').style.width = pct + '%';
+  document.getElementById('progLeft').textContent = today + ' \u26A1 today';
+
+  const note = document.getElementById('progNote');
+  if (today >= BAT_GOAL) {
+    note.textContent = '\uD83D\uDD0B Battery earned! You crushed it today!';
+    note.className   = 'prog-note done';
+  } else {
+    note.textContent = (BAT_GOAL - today) + ' more \u26A1 to earn a Battery \uD83D\uDD0B';
+    note.className   = 'prog-note';
+  }
+}
+
+async function logActivity(type, pts) {
+  try {
+    const res = await fetch('/api/log', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ type, points: pts }),
+    });
+
+    if (!res.ok) {
+      if (res.status === 401) { window.location.href = '/'; return; }
+      return;
+    }
+
+    const data = await res.json();
+
+    myData.totalEnergy = data.totalEnergy;
+    myData.todayEnergy = data.todayEnergy;
+    myData.batteries   = data.batteries;
+    myData.batEarned   = data.batEarned;
+
+    renderStats();
+    flashEnergy();
+    addLogItem({ type, points: pts, created_at: new Date().toISOString() });
+
+    if (data.newBattery) {
+      showCelebration();
+    }
+
+    loadLeaderboard();
+  } catch (err) {
+    console.error('Log failed:', err);
+  }
+}
+
+function doMath() {
+  const n = parseInt(document.getElementById('mathN').value);
+  if (!n || n < 1) return;
+  logActivity('Monthly Math (' + n + ' question' + (n > 1 ? 's' : '') + ')', n * 5);
+  document.getElementById('mathN').value = '';
+  document.getElementById('mathPrev').textContent = '';
+}
+
+function doWWS() {
+  const w = parseInt(document.getElementById('wwsN').value);
+  if (!w || w < 1) return;
+  const pts = Math.floor(w / 100) * 35;
+  if (pts === 0) {
+    document.getElementById('wwsPrev').textContent = 'Need at least 100 words!';
+    return;
+  }
+  logActivity('WWS (' + w + ' words)', pts);
+  document.getElementById('wwsN').value = '';
+  document.getElementById('wwsPrev').textContent = '';
+}
+
+function calcPreview(which) {
+  if (which === 'math') {
+    const n = parseInt(document.getElementById('mathN').value) || 0;
+    document.getElementById('mathPrev').textContent = n ? '= ' + (n * 5) + ' \u26A1' : '';
+  } else {
+    const w = parseInt(document.getElementById('wwsN').value) || 0;
+    const p = Math.floor(w / 100) * 35;
+    document.getElementById('wwsPrev').textContent = w ? w + ' words = ' + p + ' \u26A1' : '';
+  }
+}
+
+async function loadHistory() {
+  try {
+    const res = await fetch('/api/history');
+    if (!res.ok) return;
+    const logs = await res.json();
+
+    const list = document.getElementById('logList');
+    if (logs.length === 0) return;
+
+    list.innerHTML = '';
+    logs.forEach(entry => addLogItem(entry));
+  } catch (err) {
+    console.error('History load failed:', err);
+  }
+}
+
+function addLogItem(entry) {
+  const list = document.getElementById('logList');
+  const empty = list.querySelector('.empty');
+  if (empty) empty.remove();
+
+  const neg  = entry.points < 0;
+  const time = new Date(entry.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+
+  const div = document.createElement('div');
+  div.className = 'log-item';
+  div.innerHTML =
+    '<div>' +
+      '<div class="log-type">' + escapeHtml(entry.type) + '</div>' +
+      '<div class="log-time">' + time + '</div>' +
+    '</div>' +
+    '<div class="log-pts ' + (neg ? 'neg' : '') + '">' + (neg ? '' : '+') + entry.points + ' \u26A1</div>';
+  list.insertBefore(div, list.firstChild);
+}
+
+async function loadLeaderboard() {
+  try {
+    const res = await fetch('/api/leaderboard');
+    if (!res.ok) return;
+    const users = await res.json();
+
+    const lb = document.getElementById('lbList');
+    if (users.length === 0) {
+      lb.innerHTML = '<div class="empty">No one here yet!</div>';
+      return;
+    }
+
+    lb.innerHTML = '';
+    const medals = ['\uD83E\uDD47', '\uD83E\uDD48', '\uD83E\uDD49'];
+
+    users.forEach((u, i) => {
+      const rank  = i + 1;
+      const isMe  = u.username === myUsername;
+      const cls   = rank === 1 ? 'g' : rank === 2 ? 's' : rank === 3 ? 'b' : '';
+      const medal = rank <= 3 ? medals[rank - 1] : rank;
+
+      const div = document.createElement('div');
+      div.className = 'lb-item' + (isMe ? ' me' : '');
+      div.innerHTML =
+        '<div class="lb-rank ' + cls + '">' + medal + '</div>' +
+        '<div class="lb-name">' +
+          escapeHtml(u.username) + (isMe ? '<span class="lb-me-tag">YOU</span>' : '') +
+        '</div>' +
+        (u.batteries > 0 ? '<span class="lb-bat">\uD83D\uDD0B' + u.batteries + '</span>' : '') +
+        '<div class="lb-pts">' + u.total_energy + ' \u26A1</div>';
+      lb.appendChild(div);
+    });
+  } catch (err) {
+    console.error('Leaderboard load failed:', err);
+  }
+}
+
+function showCelebration() {
+  const el = document.getElementById('celebration');
+  el.style.display = 'flex';
+  setTimeout(() => el.style.display = 'none', 3200);
+}
+
+function flashEnergy() {
+  const chip = document.getElementById('energyChip');
+  chip.classList.add('flash');
+  setTimeout(() => chip.classList.remove('flash'), 380);
+}
+
+async function logout() {
+  await fetch('/api/logout', { method: 'POST' });
+  window.location.href = '/';
+}
+
+function escapeHtml(str) {
+  const div = document.createElement('div');
+  div.textContent = str;
+  return div.innerHTML;
+}
+</script>
+</body>
+</html>
