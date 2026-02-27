@@ -1,0 +1,229 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Study Energy - Login</title>
+  <style>
+    :root {
+      --bg: #080c18;
+      --card: #10172a;
+      --card2: #161f36;
+      --border: #1e2d52;
+      --yellow: #ffe600;
+      --yellow2: #ffab00;
+      --yellow-glow: rgba(255,230,0,0.18);
+      --green: #69f0ae;
+      --red: #ff5252;
+      --text: #e8edf8;
+      --dim: #6b7faa;
+    }
+    *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: 'Segoe UI', system-ui, sans-serif;
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .auth-box {
+      background: var(--card);
+      border: 2px solid var(--yellow);
+      border-radius: 24px;
+      padding: 48px 40px;
+      text-align: center;
+      max-width: 420px;
+      width: 92%;
+      box-shadow: 0 0 80px var(--yellow-glow), 0 24px 60px rgba(0,0,0,0.6);
+      animation: popIn .45s cubic-bezier(.34,1.56,.64,1);
+    }
+    @keyframes popIn {
+      from { transform: scale(0); opacity: 0; }
+      to   { transform: scale(1); opacity: 1; }
+    }
+    .bolt {
+      font-size: 80px;
+      display: block;
+      margin-bottom: 12px;
+      animation: boltPulse 2s ease-in-out infinite;
+    }
+    @keyframes boltPulse {
+      0%,100% { transform: scale(1) rotate(-3deg); filter: drop-shadow(0 0 8px #ffe600); }
+      50%     { transform: scale(1.12) rotate(3deg); filter: drop-shadow(0 0 24px #ffe600); }
+    }
+    h1 {
+      font-size: 30px; font-weight: 900;
+      color: var(--yellow); letter-spacing: -0.5px;
+      margin-bottom: 8px;
+      text-shadow: 0 0 30px var(--yellow-glow);
+    }
+    .subtitle {
+      color: var(--dim); font-size: 15px;
+      margin-bottom: 28px; line-height: 1.6;
+    }
+    .tabs {
+      display: flex; gap: 0; margin-bottom: 24px;
+      border-radius: 12px; overflow: hidden;
+      border: 1px solid var(--border);
+    }
+    .tab {
+      flex: 1; padding: 12px;
+      background: var(--card2); border: none;
+      color: var(--dim); font-size: 15px; font-weight: 700;
+      cursor: pointer; transition: all .2s;
+    }
+    .tab.active {
+      background: linear-gradient(135deg, var(--yellow), var(--yellow2));
+      color: #07090f;
+    }
+    .form-group {
+      margin-bottom: 14px; text-align: left;
+    }
+    .form-group label {
+      display: block; font-size: 12px; font-weight: 700;
+      color: var(--dim); text-transform: uppercase;
+      letter-spacing: 1px; margin-bottom: 6px;
+    }
+    .form-group input {
+      width: 100%; padding: 14px 18px;
+      background: var(--card2); border: 2px solid var(--border);
+      border-radius: 12px; color: var(--text); font-size: 16px;
+      outline: none; transition: border-color .2s, box-shadow .2s;
+    }
+    .form-group input:focus {
+      border-color: var(--yellow);
+      box-shadow: 0 0 24px var(--yellow-glow);
+    }
+    .form-group input::placeholder { color: var(--dim); }
+    .btn-submit {
+      width: 100%; padding: 15px; margin-top: 8px;
+      background: linear-gradient(135deg, var(--yellow), var(--yellow2));
+      border: none; border-radius: 12px;
+      color: #07090f; font-size: 17px; font-weight: 900;
+      cursor: pointer; letter-spacing: .3px;
+      transition: transform .15s, box-shadow .15s;
+    }
+    .btn-submit:hover { transform: translateY(-3px); box-shadow: 0 10px 30px rgba(255,230,0,.35); }
+    .btn-submit:active { transform: translateY(0); }
+    .btn-submit:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
+    .error {
+      background: rgba(255,82,82,.12);
+      border: 1px solid var(--red);
+      border-radius: 10px;
+      padding: 10px 14px;
+      font-size: 13px;
+      color: var(--red);
+      margin-bottom: 14px;
+      display: none;
+    }
+    .success {
+      background: rgba(105,240,174,.1);
+      border: 1px solid var(--green);
+      border-radius: 10px;
+      padding: 10px 14px;
+      font-size: 13px;
+      color: var(--green);
+      margin-bottom: 14px;
+      display: none;
+    }
+  </style>
+</head>
+<body>
+  <div class="auth-box">
+    <span class="bolt">&#9889;</span>
+    <h1>Study Energy</h1>
+    <p class="subtitle">Log your work, earn energy, and compete on the leaderboard!</p>
+
+    <div class="tabs">
+      <button class="tab active" onclick="switchTab('login')">Log In</button>
+      <button class="tab" onclick="switchTab('signup')">Sign Up</button>
+    </div>
+
+    <div id="errorBox" class="error"></div>
+    <div id="successBox" class="success"></div>
+
+    <form id="authForm" onsubmit="handleSubmit(event)">
+      <div class="form-group">
+        <label>Username</label>
+        <input id="username" type="text" maxlength="22" placeholder="Enter your name..." required autocomplete="username">
+      </div>
+      <div class="form-group">
+        <label>Password</label>
+        <input id="password" type="password" placeholder="Enter your password..." required autocomplete="current-password">
+      </div>
+      <button class="btn-submit" id="submitBtn" type="submit">&#9889; Log In</button>
+    </form>
+  </div>
+
+  <script>
+    let mode = 'login';
+
+    fetch('/api/me').then(r => {
+      if (r.ok) window.location.href = '/app';
+    });
+
+    function switchTab(tab) {
+      mode = tab;
+      document.querySelectorAll('.tab').forEach((t, i) => {
+        t.classList.toggle('active', (tab === 'login' && i === 0) || (tab === 'signup' && i === 1));
+      });
+      document.getElementById('submitBtn').innerHTML = tab === 'login' ? '&#9889; Log In' : '&#9889; Create Account';
+      document.getElementById('errorBox').style.display = 'none';
+      document.getElementById('successBox').style.display = 'none';
+    }
+
+    async function handleSubmit(e) {
+      e.preventDefault();
+      const username = document.getElementById('username').value.trim();
+      const password = document.getElementById('password').value;
+      const errorBox = document.getElementById('errorBox');
+      const successBox = document.getElementById('successBox');
+      const btn = document.getElementById('submitBtn');
+
+      errorBox.style.display = 'none';
+      successBox.style.display = 'none';
+
+      if (!username || !password) {
+        errorBox.textContent = 'Please fill in all fields.';
+        errorBox.style.display = 'block';
+        return;
+      }
+
+      btn.disabled = true;
+      btn.textContent = mode === 'login' ? 'Logging in...' : 'Creating account...';
+
+      try {
+        const res = await fetch(`/api/${mode}`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ username, password }),
+        });
+
+        const data = await res.json();
+
+        if (!res.ok) {
+          errorBox.textContent = data.error || 'Something went wrong';
+          errorBox.style.display = 'block';
+          btn.disabled = false;
+          btn.innerHTML = mode === 'login' ? '&#9889; Log In' : '&#9889; Create Account';
+          return;
+        }
+
+        if (mode === 'signup') {
+          successBox.textContent = 'Account created! Redirecting...';
+          successBox.style.display = 'block';
+        }
+
+        setTimeout(() => { window.location.href = '/app'; }, 400);
+      } catch (err) {
+        errorBox.textContent = 'Network error. Please try again.';
+        errorBox.style.display = 'block';
+        btn.disabled = false;
+        btn.innerHTML = mode === 'login' ? '&#9889; Log In' : '&#9889; Create Account';
+      }
+    }
+  </script>
+</body>
+</html>
